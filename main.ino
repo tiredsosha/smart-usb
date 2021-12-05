@@ -7,9 +7,17 @@
 #define AP_SSID "Smart USB"
 #define AP_PASS "hello88io"
 
-char *ssid = "";        //Enter SSID
-char *password = ""; //Enter Password
+// Set pins
+#define DATA 1
+#define VOL 2
+#define GREEN 4
+#define RED 5
 
+// Set WIFI
+char *ssid = "";
+char *password = ""; 
+
+// Set temp WIFI
 String webpage = "";
 String SSID = "";
 String PASS = "";
