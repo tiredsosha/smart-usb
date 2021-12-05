@@ -23,6 +23,19 @@ String SSID = "";
 String PASS = "";
 
 ESP8266WebServer server(80); //Server on port 80
+
+
+void relay() 
+{
+    digitalWrite(DATA, LOW);
+    delay(500);
+    digitalWrite(VOL, LOW);
+    delay(500);
+    digitalWrite(VOL, HIGH);
+    delay(500);
+    digitalWrite(DATA, HIGH);
+} 
+
 void files() 
 {
 bool success = SPIFFS.begin();
@@ -113,12 +126,10 @@ void reboot()
     ESP.restart();
 }
 // Don't use
-void home()
+void relay()
 {
-    webpage = "";
-    webpage = "This is home page\nredirecting to wifi setup";
-    server.send(200, "text/plain", webpage);
-    wifi();
+    server.send(200, "text/plain", "swithing relay");
+    relay();
 }
 
 void setup(void)
@@ -130,6 +141,10 @@ void setup(void)
     pinMode(VOL, OUTPUT);
     pinMode(GREEN, OUTPUT);
     pinMode(RED, OUTPUT);
+    
+    // Relay config
+    digitalWrite(DATA, LOW);
+    digitalWrite(VOL, LOW);
 
     // Connect to WiFi
     WiFi.mode(WIFI_STA);
@@ -147,6 +162,7 @@ void setup(void)
             Serial.println("WiFi connection Successful");
             Serial.println("The IP Address of ESP8266 Module is: ");
             Serial.println(WiFi.localIP()); // Print the IP address
+            digitalWrite(GREEN, LOW);
             break;
         }
     }
@@ -157,9 +173,11 @@ void setup(void)
         WiFi.mode(WIFI_OFF);
         WiFi.mode(WIFI_AP);
         WiFi.softAP(AP_SSID, AP_PASS);
+        digitalWrite(RED, LOW);
     }
     server.on("/", wifi);
     server.on("/reboot", reboot);
+    server.on("/relay", relay);
     server.begin();
     Serial.println(F("Webserver started...")); // Start the webserver
 }
