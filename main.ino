@@ -48,7 +48,8 @@ else
 {
     while (creds.available()) 
     {
-        Serial.write(creds.read());
+        String data = creds.read();
+        Serial.write(data);
         ssid = "";
         password = "";
     }
