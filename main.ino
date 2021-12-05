@@ -124,6 +124,13 @@ void home()
 void setup(void)
 {
     Serial.begin(115200);
+
+    // Pins setup
+    pinMode(DATA, OUTPUT);
+    pinMode(VOL, OUTPUT);
+    pinMode(GREEN, OUTPUT);
+    pinMode(RED, OUTPUT);
+
     // Connect to WiFi
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
