@@ -6,14 +6,54 @@
 #define AP_SSID "Smart USB"
 #define AP_PASS "hello88io"
 
-const char *ssid = "Chich&KO";        //Enter SSID
-const char *password = "Sosha_4ever"; //Enter Password
+char *ssid = "";        //Enter SSID
+char *password = ""; //Enter Password
 
 String webpage = "";
 String SSID = "";
 String PASS = "";
 
 ESP8266WebServer server(80); //Server on port 80
+void files() 
+{
+bool success = SPIFFS.begin();
+
+  if (!success) {
+    Serial.println("Error mounting the file system");
+    return;
+  }
+File creds = SPIFFS.open("/creds.txt", "r");
+
+if (!creds) {
+    Serial.println("Failed to open file for reading");
+    creds.close();
+
+    File credsW = SPIFFS.open("/creds.txt", "w");
+    if (!credsW) {
+        Serial.println("Error opening file for writing");
+        return;
+    }
+    int bytesWritten = credsW.print("hello.io hello88io");
+
+    if (bytesWritten == 0) {
+       Serial.println("File write failed");
+       return;
+    }
+    credsW.close();
+    ssid = "hello.io";
+    password = "hello88io";
+}
+else
+{
+    while (creds.available()) 
+    {
+        Serial.write(creds.read());
+        ssid = "";
+        password = "";
+    }
+    creds.close();
+}
+} 
 
 void wifi()
 {
