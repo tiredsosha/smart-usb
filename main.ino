@@ -14,8 +14,8 @@
 #define RED 5
 
 // Set WIFI
-char *ssid = "";
-char *password = ""; 
+char *ssid = "hello.io";
+char *password = "hello88io"; 
 
 // Set temp WIFI
 String webpage = "";
@@ -60,8 +60,6 @@ void files()
             return;
         }
         credsW.close();
-        ssid = "hello.io";
-        password = "hello88io";
     } 
     else
     {
