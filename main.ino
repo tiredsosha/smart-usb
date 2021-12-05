@@ -38,44 +38,42 @@ void relay()
 
 void files() 
 {
-bool success = SPIFFS.begin();
+    bool success = SPIFFS.begin();
 
-  if (!success) {
-    Serial.println("Error mounting the file system");
+    if (!success) {
+        Serial.println("Error mounting the file system");
     return;
-  }
-File creds = SPIFFS.open("/creds.txt", "r");
-
-if (!creds) {
-    Serial.println("Failed to open file for reading");
-    creds.close();
-
-    File credsW = SPIFFS.open("/creds.txt", "w");
-    if (!credsW) {
-        Serial.println("Error opening file for writing");
-        return;
     }
-    int bytesWritten = credsW.print("hello.io hello88io");
+    File creds = SPIFFS.open("/creds.txt", "r");
 
-    if (bytesWritten == 0) {
-       Serial.println("File write failed");
-       return;
-    }
-    credsW.close();
-    ssid = "hello.io";
-    password = "hello88io";
-}
-else
-{
-    while (creds.available()) 
+    if (!creds) {
+        Serial.println("Failed to open file for reading");
+        File credsW = SPIFFS.open("/creds.txt", "w");
+        if (!credsW) {
+            Serial.println("Error opening file for writing");
+            return;
+        }
+        int bytesWritten = credsW.print("hello.io hello88io");
+
+        if (bytesWritten == 0) {
+            Serial.println("File write failed");
+            return;
+        }
+        credsW.close();
+        ssid = "hello.io";
+        password = "hello88io";
+    } 
+    else
     {
-        String data = creds.read();
-        Serial.write(data);
-        ssid = getValue(data, ' ', 0);
-        password = getValue(data, ' ', 1);
+        while (creds.available()) 
+        {
+            String data = creds.read();
+            Serial.write(data);
+            ssid = getValue(data, ' ', 0);
+            password = getValue(data, ' ', 1);
+        }
+        creds.close();
     }
-    creds.close();
-}
 } 
 
 void wifi()
@@ -125,7 +123,7 @@ void reboot()
     Delay(5000);
     ESP.restart();
 }
-// Don't use
+
 void relay()
 {
     server.send(200, "text/plain", "swithing relay");
@@ -146,6 +144,9 @@ void setup(void)
     digitalWrite(DATA, LOW);
     digitalWrite(VOL, LOW);
 
+    // Read file
+    files();
+
     // Connect to WiFi
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
@@ -160,12 +161,13 @@ void setup(void)
         {
             Serial.println("");
             Serial.println("WiFi connection Successful");
-            Serial.println("The IP Address of ESP8266 Module is: ");
+            Serial.println("The IP Address of Smart USB is: ");
             Serial.println(WiFi.localIP()); // Print the IP address
             digitalWrite(GREEN, LOW);
             break;
         }
     }
+    // Starting AP
     if (WiFi.status() != WL_CONNECTED)
     {
         Serial.println("Can't connect to WIFI");
@@ -175,11 +177,13 @@ void setup(void)
         WiFi.softAP(AP_SSID, AP_PASS);
         digitalWrite(RED, LOW);
     }
+    // Set routes
     server.on("/", wifi);
     server.on("/reboot", reboot);
     server.on("/relay", relay);
+    // Start Webserver
     server.begin();
-    Serial.println(F("Webserver started...")); // Start the webserver
+    Serial.println(F("Webserver started..."));
 }
 
 void loop()
