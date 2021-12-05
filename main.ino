@@ -29,10 +29,10 @@ void wifi()
     webpage += "<input type=\"text\" id=\"pass\" name=\"pass\"><br><br>";
     webpage += "<input type=\"submit\" value=\"Save\">";
     webpage += "</form>";
+    webpage += "<p>Reboot device after changing wifi</p>";
     webpage += "<a href = \"/reboot\">";
     webpage += "<button>Reboot</button>";
     webpage += "</a>";
-    webpage += "<p>Reboot device after changing wifi</p>";
     webpage += "</body>";
     webpage += "</html>";
     server.send(200, "text/html", webpage);
