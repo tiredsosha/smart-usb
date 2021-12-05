@@ -50,8 +50,8 @@ else
     {
         String data = creds.read();
         Serial.write(data);
-        ssid = "";
-        password = "";
+        ssid = getValue(data, ' ', 0);
+        password = getValue(data, ' ', 1);
     }
     creds.close();
 }
