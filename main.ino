@@ -59,7 +59,7 @@ void reboot()
     webpage = "WIFI configuration is done. Rebooting";
     server.send(200, "text/plain", webpage);
     Delay(5000);
-    Esp.restart();
+    ESP.restart();
 }
 // Don't use
 void home()
