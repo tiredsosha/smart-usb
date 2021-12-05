@@ -1,6 +1,7 @@
 #include "ESP8266WiFi.h"
 #include <ESP8266WebServer.h>
 #include <WiFiClient.h>
+#include "FS.h"
 
 // Set AP credentials
 #define AP_SSID "Smart USB"
