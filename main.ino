@@ -122,6 +122,10 @@ void wifi()
     webpage += "<a href = \"/reboot\">";
     webpage += "<button>Reboot</button>";
     webpage += "</a>";
+    webpage += "<br><p>Reload relay</p>";
+    webpage += "<a href = \"/relay\">";
+    webpage += "<button>Reboot</button>";
+    webpage += "</a>";
     webpage += "</body>";
     webpage += "</html>";
     server.send(200, "text/html", webpage);
