@@ -1,6 +1,5 @@
 #include "ESP8266WiFi.h"
 #include <ESP8266WebServer.h>
-#include <WiFiClient.h>
 #include "FS.h"
 
 // Set AP credentials
@@ -8,14 +7,14 @@
 #define AP_PASS "hello88io"
 
 // Set pins
-#define DATA 1
+#define DATA 0
 #define VOL 2
-#define GREEN 4
-#define RED 5
+#define GREEN 15
+#define RED 13
 
 // Set WIFI
-char *ssid = "hello.io";
-char *password = "hello88io"; 
+String ssid = "hello.io";
+String password = "hello88io";
 
 // Set temp WIFI
 String webpage = "";
@@ -24,8 +23,7 @@ String PASS = "";
 
 ESP8266WebServer server(80); //Server on port 80
 
-
-void relay() 
+void relayRestart()
 {
     digitalWrite(DATA, LOW);
     delay(500);
@@ -34,45 +32,77 @@ void relay()
     digitalWrite(VOL, HIGH);
     delay(500);
     digitalWrite(DATA, HIGH);
-} 
+}
 
-void files() 
+void files()
 {
     bool success = SPIFFS.begin();
-
-    if (!success) {
+    if (!success)
+    {
         Serial.println("Error mounting the file system");
-    return;
+        return;
     }
-    File creds = SPIFFS.open("/creds.txt", "r");
 
-    if (!creds) {
+    File ssidF = SPIFFS.open("/ssid.txt", "r");
+    if (!ssidF)
+    {
         Serial.println("Failed to open file for reading");
-        File credsW = SPIFFS.open("/creds.txt", "w");
-        if (!credsW) {
+        File ssidW = SPIFFS.open("/ssid.txt", "w");
+        if (!ssidW)
+        {
             Serial.println("Error opening file for writing");
             return;
         }
-        int bytesWritten = credsW.print("hello.io hello88io");
+        int bytesWritten = ssidW.print("hello.io|");
 
-        if (bytesWritten == 0) {
+        if (bytesWritten == 0)
+        {
             Serial.println("File write failed");
             return;
         }
-        credsW.close();
-    } 
+        ssidW.close();
+    }
     else
     {
-        while (creds.available()) 
+        while (ssidF.available())
         {
-            String data = creds.read();
-            Serial.write(data);
-            ssid = getValue(data, ' ', 0);
-            password = getValue(data, ' ', 1);
+            String dataS = ssidF.readStringUntil('|');
+            Serial.println(dataS);
+            ssid = dataS;
         }
-        creds.close();
+        ssidF.close();
     }
-} 
+
+    File passwordF = SPIFFS.open("/password.txt", "r");
+    if (!passwordF)
+    {
+        Serial.println("Failed to open file for reading");
+        File passwordW = SPIFFS.open("/password.txt", "w");
+        if (!passwordW)
+        {
+            Serial.println("Error opening file for writing");
+            return;
+        }
+        int bytesWritten = passwordW.print("hello88io|");
+
+        if (bytesWritten == 0)
+        {
+            Serial.println("File write failed");
+            return;
+        }
+        passwordW.close();
+    }
+    else
+    {
+        while (passwordF.available())
+        {
+            String dataP = passwordF.readStringUntil('|');
+            Serial.println(dataP);
+            password = dataP;
+        }
+        passwordF.close();
+    }
+}
 
 void wifi()
 {
@@ -80,7 +110,7 @@ void wifi()
     webpage += "<!DOCTYPE html>";
     webpage += "<html>";
     webpage += "<body>";
-    webpage += "<form action=\"/wifi\" method =\"POST\" onkeydown=\"return event.key != 'Enter'\">";
+    webpage += "<form action=\"/\" method =\"POST\" onkeydown=\"return event.key != 'Enter'\">";
     webpage += "<h1>WIFI Settings</h1>";
     webpage += "<label for=\"fname\">SSID: </label>";
     webpage += "<input type=\"text\" id=\"ssid\" name=\"ssid\"><br><br>";
@@ -107,9 +137,40 @@ void wifi()
                 PASS = client_response;
         }
         SSID.trim();
-        PASS.trim();
         Serial.println("ssid was : " + SSID);
+        SSID = SSID + "|";
+        PASS.trim();
         Serial.println("pass was : " + PASS);
+        PASS = PASS + "|";
+
+        File file = SPIFFS.open("/ssid.txt", "w");
+
+        if (!file)
+        {
+            Serial.println("Error opening file for writing");
+            return;
+        }
+        int bytesWritten1 = file.print(SSID);
+        if (bytesWritten1 == 0)
+        {
+            Serial.println("File write failed");
+            return;
+        }
+        file.close();
+        File file2 = SPIFFS.open("/password.txt", "w");
+
+        if (!file2)
+        {
+            Serial.println("Error opening file for writing");
+            return;
+        }
+        int bytesWritten2 = file2.print(PASS);
+        if (bytesWritten2 == 0)
+        {
+            Serial.println("File write failed");
+            return;
+        }
+        file2.close();
     }
 }
 
@@ -117,15 +178,16 @@ void reboot()
 {
     webpage = "";
     webpage = "WIFI configuration is done. Rebooting";
+    Serial.println("rebooting");
     server.send(200, "text/plain", webpage);
-    Delay(5000);
+    delay(5000);
     ESP.restart();
 }
 
 void relay()
 {
     server.send(200, "text/plain", "swithing relay");
-    relay();
+    relayRestart();
 }
 
 void setup(void)
@@ -137,7 +199,7 @@ void setup(void)
     pinMode(VOL, OUTPUT);
     pinMode(GREEN, OUTPUT);
     pinMode(RED, OUTPUT);
-    
+
     // Relay config
     digitalWrite(DATA, LOW);
     digitalWrite(VOL, LOW);
@@ -148,7 +210,7 @@ void setup(void)
     // Connect to WiFi
     WiFi.mode(WIFI_STA);
     WiFi.begin(ssid, password);
-    for (int i = 0; i <= 19; i++)
+    for (int i = 0; i <= 18; i++)
     {
         if (WiFi.status() != WL_CONNECTED)
         {
@@ -161,7 +223,7 @@ void setup(void)
             Serial.println("WiFi connection Successful");
             Serial.println("The IP Address of Smart USB is: ");
             Serial.println(WiFi.localIP()); // Print the IP address
-            digitalWrite(GREEN, LOW);
+            digitalWrite(GREEN, HIGH);
             break;
         }
     }
@@ -173,7 +235,7 @@ void setup(void)
         WiFi.mode(WIFI_OFF);
         WiFi.mode(WIFI_AP);
         WiFi.softAP(AP_SSID, AP_PASS);
-        digitalWrite(RED, LOW);
+        digitalWrite(RED, HIGH);
     }
     // Set routes
     server.on("/", wifi);
