@@ -190,7 +190,7 @@ void reboot()
 
 void relay()
 {
-    server.send(200, "text/plain", "swithing relay");
+    server.send(200, "text/plain", "Swithing relay");
     relayRestart();
 }
 
